@@ -14,13 +14,13 @@ app.get('/api',(req,res) => {
 app.get('/api/recover',async (req,res) => {
     try {
         var message = web3.utils.utf8ToHex("Verify Asset")
-        // var signature = req.query.signature
-        // var recovered = await web3.eth.personal.ecRecover(message,signature)
-        // res.setHeader('Content-Type','application/json')
-        // res.statusCode = 200
-        res.end(JSON.stringify({address: message}))
-    } catch (error) {
-        res.end(error)
+        var signature = req.query.signature
+        var recovered = await web3.eth.accounts.recover(message,signature)
+        res.setHeader('Content-Type','application/json')
+        res.end(JSON.stringify({address: recovered}))
+    } catch (e) {
+        res.statusCode = 400
+        res.end(JSON.stringify({error: e.message}))
     }
     
 })
