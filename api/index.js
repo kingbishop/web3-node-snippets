@@ -13,7 +13,7 @@ app.get('/api',(req,res) => {
 
 app.get('/api/recover',async (req,res) => {
     try {
-        var message = web3.utils.utf8ToHex("Verify Asset")
+        var message = req.query.message
         var signature = req.query.signature
         var recovered = await web3.eth.accounts.recover(message,signature)
         res.setHeader('Content-Type','application/json')
