@@ -14,6 +14,32 @@ app.get('/api',(req,res) => {
     res.end(JSON.stringify({status: 'healthy'}))
 })
 
+
+app.get('/api/account/transaction/count', async (req,res) => {
+    res.setHeader('Content-Type','application/json')
+    try {
+        var address = req.query.address
+        var count = await web3.eth.getTransactionCount(address)
+        res.end(JSON.stringify({count: count}))
+    }catch(e){
+        res.statusCode = 400
+        res.end(JSON.stringify({error: e.message}))
+    }
+})
+
+
+app.get('/api/gas/price', async (req,res) => {
+    res.setHeader('Content-Type','application/json')
+    try {
+        var gasPrice = await web3.eth.getGasPrice()
+        res.end(JSON.stringify({gasPrice: gasPrice}))
+    } catch (e) {
+        res.statusCode = 400
+        res.end(JSON.stringify({error: e.message}))
+    }
+
+})
+
 app.get('/api/recover',async (req,res) => {
     res.setHeader('Content-Type','application/json')
     try {
