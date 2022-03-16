@@ -3,10 +3,35 @@ const app = require('express')()
 const Web3 = require('web3')
 
 const rinkeby = `https://rinkeby.infura.io/v3/${process.env.INFURA_PROJECT_ID}`
+const APIKEY = `${process.env.API_KEY}`
 const web3 = new Web3(new Web3.providers.HttpProvider(rinkeby))
 
 const ERC721_ABI = require('./abi/ERC721.json')
 const ERC1155_ABI = require('./abi/ERC1155.json')
+
+
+function response_error(res, message) {
+    res.statusCode = 400
+    res.end(JSON.stringify({error:message}))
+}
+
+function auth_check(req,res){
+    var auth = req.query.auth
+    if(!auth || auth != APIKEY){
+        response_error(res,"Invalid or missing api key")
+        return false
+    }
+    return true
+}
+
+
+app.use('/api',(req, res, next) => {
+    if(!auth_check(req,res)){
+        return
+    }
+    next()
+})
+
 
 app.get('/api',(req,res) => {
     res.setHeader('Content-Type','application/json')
@@ -22,8 +47,7 @@ app.get('/api/account/transaction/count', async (req,res) => {
         var count = await web3.eth.getTransactionCount(address)
         res.end(JSON.stringify({count: count}))
     }catch(e){
-        res.statusCode = 400
-        res.end(JSON.stringify({error: e.message}))
+        response_error(res,e.message)
     }
 })
 
@@ -34,8 +58,7 @@ app.get('/api/gas/price', async (req,res) => {
         var gasPrice = await web3.eth.getGasPrice()
         res.end(JSON.stringify({gasPrice: gasPrice}))
     } catch (e) {
-        res.statusCode = 400
-        res.end(JSON.stringify({error: e.message}))
+        response_error(res,e.message)
     }
 
 })
@@ -50,8 +73,7 @@ app.get('/api/recover',async (req,res) => {
         
         res.end(JSON.stringify({address: recovered}))
     } catch (e) {
-        res.statusCode = 400
-        res.end(JSON.stringify({error: e.message}))
+        response_error(res,e.message)
     }
     
 })
@@ -63,8 +85,7 @@ app.get('/api/erc721/balanceof', async (req,res) => {
         var accountAddress = req.query.accountAddress
 
         if(!contractAddress || !accountAddress) {
-            res.statusCode = 400
-            res.end(JSON.stringify({error: "required parameters - contractAddress AND accountAddress"}))
+            response_error(res,"required parameters - contractAddress AND accountAddress")
             return
         }
 
@@ -76,8 +97,7 @@ app.get('/api/erc721/balanceof', async (req,res) => {
         res.end(JSON.stringify({name: tokenName, balance: accountBalance}))
 
     }catch(e) {
-        res.statusCode = 400
-        res.end(JSON.stringify({error: e.message}))
+        response_error(res,e.message)
     }
 })
 
